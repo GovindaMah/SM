@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IBM ESG Audit Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #0b0f19;
+    color: #fff;
+}
+
+.header {
+    background: #111827;
+    padding: 15px 30px;
+    font-size: 22px;
+    font-weight: bold;
+    color: #4da6ff;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    width: 220px;
+    background: #111827;
+    height: 100vh;
+    padding-top: 20px;
+}
+
+.sidebar button {
+    width: 90%;
+    margin: 10px;
+    padding: 12px;
+    border: none;
+    background: #1f2937;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.sidebar button:hover {
+    background: #374151;
+}
+
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+.cards {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.card {
+    flex: 1;
+    background: #111827;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.card h3 {
+    color: #9ca3af;
+}
+
+.card p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #4da6ff;
+}
+
+.chart-box {
+    background: #111827;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+canvas {
+    background: #fff;
+    border-radius: 8px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">IBM ESG Audit Dashboard</div>
+
+<div class="container">
+
+<div class="sidebar">
+    <button onclick="showPage('env')">Environmental</button>
+    <button onclick="showPage('social')">Social</button>
+    <button onclick="showPage('gov')">Governance</button>
+</div>
+
+<div class="main">
+
+<!-- ================= ENVIRONMENT ================= -->
+<div id="env" class="page">
+
+<div class="cards">
+    <div class="card">
+        <h3>Carbon Score</h3>
+        <p>78</p>
+    </div>
+    <div class="card">
+        <h3>Energy Efficiency</h3>
+        <p>82</p>
+    </div>
+    <div class="card">
+        <h3>Water Usage</h3>
+        <p>69</p>
+    </div>
+</div>
+
+<div class="chart-box">
+    <h3>Environmental Performance</h3>
+    <canvas id="envBar"></canvas>
+</div>
+
+<div class="chart-box">
+    <h3>Energy Mix</h3>
+    <canvas id="envPie"></canvas>
+</div>
+
+</div>
+
+<!-- ================= SOCIAL ================= -->
+<div id="social" class="page" style="display:none;">
+
+<div class="cards">
+    <div class="card">
+        <h3>Employee Score</h3>
+        <p>85</p>
+    </div>
+    <div class="card">
+        <h3>Safety Index</h3>
+        <p>90</p>
+    </div>
+    <div class="card">
+        <h3>Diversity</h3>
+        <p>72</p>
+    </div>
+</div>
+
+<div class="chart-box">
+    <h3>Social Metrics</h3>
+    <canvas id="socialBar"></canvas>
+</div>
+
+<div class="chart-box">
+    <h3>Diversity Distribution</h3>
+    <canvas id="socialPie"></canvas>
+</div>
+
+</div>
+
+<!-- ================= GOVERNANCE ================= -->
+<div id="gov" class="page" style="display:none;">
+
+<div class="cards">
+    <div class="card">
+        <h3>Compliance</h3>
+        <p>88</p>
+    </div>
+    <div class="card">
+        <h3>Audit Score</h3>
+        <p>84</p>
+    </div>
+    <div class="card">
+        <h3>Transparency</h3>
+        <p>80</p>
+    </div>
+</div>
+
+<div class="chart-box">
+    <h3>Governance Trend</h3>
+    <canvas id="govLine"></canvas>
+</div>
+
+<div class="chart-box">
+    <h3>Compliance Split</h3>
+    <canvas id="govPie"></canvas>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+// Page switch
+function showPage(page) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById(page).style.display = 'block';
+}
+
+// Charts
+
+// ENV BAR
+new Chart(envBar, {
+    type: 'bar',
+    data: {
+        labels: ['Carbon', 'Energy', 'Water', 'Waste'],
+        datasets: [{
+            data: [78, 82, 69, 75]
+        }]
+    }
+});
+
+// ENV PIE
+new Chart(envPie, {
+    type: 'pie',
+    data: {
+        labels: ['Renewable', 'Non-Renewable'],
+        datasets: [{
+            data: [65, 35]
+        }]
+    }
+});
+
+// SOCIAL BAR
+new Chart(socialBar, {
+    type: 'bar',
+    data: {
+        labels: ['Employees', 'Training', 'Safety', 'Retention'],
+        datasets: [{
+            data: [85, 75, 90, 80]
+        }]
+    }
+});
+
+// SOCIAL PIE
+new Chart(socialPie, {
+    type: 'pie',
+    data: {
+        labels: ['Male', 'Female', 'Other'],
+        datasets: [{
+            data: [60, 35, 5]
+        }]
+    }
+});
+
+// GOV LINE
+new Chart(govLine, {
+    type: 'line',
+    data: {
+        labels: ['2021', '2022', '2023', '2024'],
+        datasets: [{
+            data: [70, 75, 80, 85]
+        }]
+    }
+});
+
+// GOV PIE
+new Chart(govPie, {
+    type: 'pie',
+    data: {
+        labels: ['Compliant', 'Non-Compliant'],
+        datasets: [{
+            data: [88, 12]
+        }]
+    }
+});
+
+</script>
+
+</body>
+</html>
