@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IBM | NEURAL-SDG HUD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon-blue: #00d4ff; --neon-purple: #9d00ff; --dark-bg: #030712; }
+        body { font-family: 'IBM Plex Mono', monospace; background-color: var(--dark-bg); color: #e2e8f0; overflow-x: hidden; }
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        
+        /* Cyber-Grid Background */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(0, 212, 255, 0.05) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(0, 212, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -1;
+        }
+
+        .cyber-card {
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 212, 255, 0.2); position: relative; overflow: hidden;
+        }
+        .cyber-card::after {
+            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: sweep 4s infinite;
+        }
+        @keyframes sweep { 0% { left: -100%; } 100% { left: 200%; } }
+
+        .sdg-node {
+            cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: rgba(0, 0, 0, 0.4); clip-path: polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0% 30%);
+        }
+        .sdg-node:hover { border-color: var(--neon-blue); background: rgba(0, 212, 255, 0.1); transform: scale(1.05); }
+        .node-active { border-color: var(--neon-blue) !important; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); background: rgba(0, 212, 255, 0.2) !important; }
+
+        .pulse-text { animation: pulseGlow 2s infinite; }
+        @keyframes pulseGlow { 0%, 100% { opacity: 1; text-shadow: 0 0 5px var(--neon-blue); } 50% { opacity: 0.7; text-shadow: 0 0 20px var(--neon-blue); } }
+        
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); }
+    </style>
+</head>
+<body class="p-4 lg:p-8">
+
+    <div class="max-w-[1900px] mx-auto">
+        <header class="flex justify-between items-center mb-10 cyber-card p-6 rounded-sm border-l-4 border-l-cyan-500">
+            <div class="flex items-center gap-8">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-cyan-500 blur-md opacity-20 animate-pulse"></div>
+                    <svg width="40" height="40" viewBox="0 0 32 32" fill="white" class="relative z-10"><path d="M16 2L2 9l14 7 14-7-14-7zM2 23l14 7 14-7-14-7-14 7z"/></svg>
+                </div>
+                <div>
+                    <h1 class="orbitron text-2xl font-black tracking-[0.3em] uppercase italic">IBM <span class="text-cyan-400">Core-Nexus</span></h1>
+                    <p class="text-[10px] text-cyan-700 font-bold uppercase tracking-widest">Calculated by Sustainable Platform | April 2026</p>
+                </div>
+            </div>
+            <div class="flex gap-16">
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Unscaled Signal</p>
+                    <p class="text-4xl font-bold orbitron text-white pulse-text">64.5<span class="text-xl">%</span></p>
+                </div>
+                <div class="text-right border-l border-cyan-900/50 pl-16">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Scaled Integrity Index</p>
+                    <p id="masterIndex" class="text-5xl font-black orbitron text-cyan-400">84.22</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-12 gap-10">
+            
+            <div class="col-span-12 lg:col-span-4 space-y-6">
+                <div class="cyber-card p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="orbitron text-xs font-bold text-cyan-500 tracking-tighter uppercase">Neural-SDG Matrix [17]</h3>
+                        <div class="text-[9px] bg-cyan-500/10 text-cyan-400 px-2 py-1 mono">LINK_ESTABLISHED</div>
+                    </div>
+                    <div id="sdgGrid" class="grid grid-cols-2 gap-3 max-h-[600px] overflow-y-auto pr-2">
+                        </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 lg:col-span-8 space-y-8">
+                <div class="cyber-card p-8 min-h-[550px] border-t-2 border-t-cyan-500/30">
+                    <div class="flex justify-between items-start mb-10">
+                        <div>
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="h-2 w-2 bg-cyan-400 rounded-full animate-ping"></span>
+                                <h2 id="activeGoalName" class="orbitron text-2xl font-black uppercase text-white tracking-widest">13. Climate Action</h2>
+                            </div>
+                            <p class="text-xs text-cyan-700 font-bold uppercase tracking-widest">Deep-Scan Telemetry active</p>
+                        </div>
+                        <div class="text-right">
+                            <span id="activeGoalScore" class="text-6xl font-black text-cyan-400 orbitron">--</span>
+                            <div class="text-[10px] font-bold text-cyan-800 uppercase mt-2 tracking-widest">Probability Factor</div>
+                        </div>
+                    </div>
+                    <div class="flex-grow h-[350px]"><canvas id="quantumChart"></canvas></div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="cyber-card p-6 border-b-2 border-b-cyan-500/20">
+                        <h4 class="text-[10px] orbitron font-bold text-cyan-800 uppercase mb-4">Greenwash Vector</h4>
+                        <p class="text-xl font-black text-green-400">0.002% (LOW)</p>
+                    </div>
+                    <div class="cyber-card p-6 border-b-2 border-b-purple-500/20">
+                        <h4 class="text-[10px] orbitron font-bold text-purple-800 uppercase mb-4">Transition Velocity</h4>
+                        <p class="text-xl font-black text-purple-400 mono">7.42 Mach</p>
+                    </div>
+                    <div class="cyber-card p-6 border-b-2 border-b-cyan-500/20">
+                        <h4 class="text-[10px] orbitron font-bold text-cyan-800 uppercase mb-4">Sync Latency</h4>
+                        <p class="text-xl font-black text-white mono">14ms</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sdgs = [
+            "No Poverty", "Zero Hunger", "Good Health", "Quality Edu", "Gender Equality",
+            "Clean Water", "Clean Energy", "Economic Growth", "Industry & Infra", "Reduced Inequality",
+            "Sust. Cities", "Consumption", "Climate Action", "Life in Water", "Life on Land",
+            "Peace & Justice", "Partnerships"
+        ];
+
+        let quantumChart;
+        let activeIndex = 12; // Start on Goal 13
+        const sensorData = sdgs.map(() => Array(30).fill(0).map(() => 70 + Math.random() * 25));
+
+        function init() {
+            renderMatrix();
+            initQuantumChart();
+            updateHUD();
+            setInterval(quantumPulse, 1000);
+        }
+
+        function renderMatrix() {
+            const grid = document.getElementById('sdgGrid');
+            grid.innerHTML = sdgs.map((name, i) => `
+                <div onclick="drilldown(${i})" id="node-${i}" class="sdg-node p-4 ${i === activeIndex ? 'node-active' : ''}">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] text-cyan-700">NODE_0${i+1}</span>
+                        <div class="h-1 w-4 bg-cyan-900 rounded-full overflow-hidden">
+                            <div class="bg-cyan-400 h-full animate-pulse w-[${70 + Math.random()*30}%]"></div>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-tighter">${name}</span>
+                </div>
+            `).join('');
+        }
+
+        function initQuantumChart() {
+            const ctx = document.getElementById('quantumChart').getContext('2d');
+            quantumChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(30).fill(''),
+                    datasets: [{
+                        data: sensorData[activeIndex],
+                        borderColor: '#00d4ff',
+                        borderWidth: 1,
+                        pointRadius: 0,
+                        backgroundColor: (context) => {
+                            const gradient = context.chart.ctx.createLinearGradient(0, 0, 0, 400);
+                            gradient.addColorStop(0, 'rgba(0, 212, 255, 0.2)');
+                            gradient.addColorStop(1, 'rgba(0, 212, 255, 0)');
+                            return gradient;
+                        },
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { min: 40, max: 100, grid: { color: 'rgba(0, 212, 255, 0.05)' }, ticks: { color: '#006680', font: { family: 'IBM Plex Mono' } } },
+                        x: { display: false }
+                    }
+                }
+            });
+        }
+
+        function drilldown(index) {
+            document.querySelectorAll('.sdg-node').forEach(n => n.classList.remove('node-active'));
+            document.getElementById(`node-${index}`).classList.add('node-active');
+            activeIndex = index;
+            updateHUD();
+            quantumChart.data.datasets[0].data = sensorData[activeIndex];
+            quantumChart.update();
+        }
+
+        function updateHUD() {
+            document.getElementById('activeGoalName').innerText = `${activeIndex + 1}. ${sdgs[activeIndex]}`;
+            const val = sensorData[activeIndex][29].toFixed(2);
+            document.getElementById('activeGoalScore').innerText = val;
+        }
+
+        function quantumPulse() {
+            // High frequency updates
+            sensorData.forEach((arr) => {
+                const last = arr[arr.length - 1];
+                const next = Math.max(60, Math.min(99, last + (Math.random() - 0.5) * 4));
+                arr.push(next);
+                arr.shift();
+            });
+            quantumChart.update('none');
+            updateHUD();
+            
+            // Scaled index jitter
+            const total = sensorData.reduce((a, b) => a + b[29], 0) / 17;
+            document.getElementById('masterIndex').innerText = (total + 9.5).toFixed(2);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
